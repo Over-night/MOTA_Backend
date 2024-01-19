@@ -1,0 +1,114 @@
+DO $$ DECLARE
+    r RECORD;
+BEGIN
+    -- if the schema you operate on is not "current", you will want to
+    -- replace current_schema() in query with 'schematodeletetablesfrom'
+    -- *and* update the generate 'DROP...' accordingly.
+    FOR r IN (SELECT tablename FROM pg_tables WHERE schemaname = current_schema()) LOOP
+        EXECUTE 'DROP TABLE IF EXISTS ' || quote_ident(r.tablename) || ' CASCADE';
+    END LOOP;
+END $$;
+
+rm -rf mota/migrations/000*
+
+python manage.py makemigrations
+python manage.py migrate
+python manage.py runserver 8080
+
+
+INSERT INTO auth_user(username, password, is_superuser, first_name, last_name, email, is_staff, is_active, date_joined) VALUES
+('A1B2C3D4E5F6G7H8I9J0K1L2M3N4', '', false, '', '', '', false, false, now()),
+('O5P6Q7R8S9T0U1V2W3X4Y5Z6A7B8', '', false, '', '', '', false, false, now()),
+('C9D0E1F2G3H4I5J6K7L8M9N0O1P2', '', false, '', '', '', false, false, now()),
+('Q3R4S5T6U7V8W9X0Y1Z2A3B4C5D6', '', false, '', '', '', false, false, now()),
+('E7F8G9H0I1J2K3L4M5N6O7P8Q9R0', '', false, '', '', '', false, false, now()),
+('S1T2U3V4W5X6Y7Z8A9B0C1D2E3F4', '', false, '', '', '', false, false, now()),
+('G5H6I7J8K9L0M1N2O3P4Q5R6S7T8', '', false, '', '', '', false, false, now()),
+('U9V0W1X2Y3Z4A5B6C7D8E9F0G1H2', '', false, '', '', '', false, false, now()),
+('I3J4K5L6M7N8O9P0Q1R2S3T4U5V6', '', false, '', '', '', false, false, now()),
+('W7X8Y9Z0A1B2C3D4E5F6G7H8I9J0', '', false, '', '', '', false, false, now());
+
+INSERT INTO users(uid, user_id, nickname, gender, age, picture, blocked_until, deleted_at) VALUES
+('A1B2C3D4E5F6G7H8I9J0K1L2M3N4', 1, 'fndskon', 'male', '20s', '', null, null),
+('O5P6Q7R8S9T0U1V2W3X4Y5Z6A7B8', 2, '출근하기싫다', 'female', '30s', '', null, null),
+('C9D0E1F2G3H4I5J6K7L8M9N0O1P2', 3, 'rlarkdud38', 'male', '20s', '', null, null),
+('Q3R4S5T6U7V8W9X0Y1Z2A3B4C5D6', 4, 'asfkvs', 'private', '40s', '', null, null),
+('E7F8G9H0I1J2K3L4M5N6O7P8Q9R0', 5, '익명', 'male', '20s', '', null, null),
+('S1T2U3V4W5X6Y7Z8A9B0C1D2E3F4', 6, '안녕14', 'female', '60s', '', null, null),
+('G5H6I7J8K9L0M1N2O3P4Q5R6S7T8', 7, '동탄시민', 'private', '50s', '', null, null),
+('U9V0W1X2Y3Z4A5B6C7D8E9F0G1H2', 8, 'asowdk14', 'female', '30s', '', null, null),
+('I3J4K5L6M7N8O9P0Q1R2S3T4U5V6', 9, 'KaYang', 'female', '30s', '', null, null),
+('W7X8Y9Z0A1B2C3D4E5F6G7H8I9J0', 10, 'qojqw2412', 'male', '40s', '', null, null);
+
+-- 운전자 : 2 3 5 6
+INSERT INTO users_driver (user_id, car_no, car_type, car_limit, car_pictures, license_path) VALUES
+('8933c4d6-055f-4b73-a30b-654fc36754de', '2515', 'IONIQ 5', 4, ARRAY ['/a'], ''),
+('C9D0E1F2G3H4I5J6K7L8M9N0O1P2', '5123', 'STAREX', 3, ARRAY ['/b', '/c'], ''),
+('E7F8G9H0I1J2K3L4M5N6O7P8Q9R0', '1230', 'Mercedes-Benz', 3, ARRAY ['/d', '/e'], ''),
+('S1T2U3V4W5X6Y7Z8A9B0C1D2E3F4', '9854', 'Rolls-Royce', 1, ARRAY ['/f', '/g'], ''),
+('cVLXxevNRhd6V5wAaGvZO72yc1I3', '1557', 'VOLVO', 3, ARRAY ['/h', '/i'], '');
+
+INSERT INTO rooms (price, party_limit, party_now, locate_start, locate_end, plan_at, content, option, user_id) VALUES
+(3000, 5, 0, '강남역', '선릉역', '20230916 08:10:00', '같이 타봐요~~', '{ "gender" : "female" , "age" : "anybody" }', 'O5P6Q7R8S9T0U1V2W3X4Y5Z6A7B8'),
+(5000, 3, 1, '수원역', '강남역', '20230916 07:10:00', '구합니다! 아침에 드라이브 스루도 같이 이용해요!', '{ "gender" : "male" , "age" : "20to30" }', 'C9D0E1F2G3H4I5J6K7L8M9N0O1P2'),
+(6500, 2, 1, '석촌역', '홍대역', '20230916 07:30:00', '카풀하실분!', '{ "gender" : "anybody" , "age" : "anybody" }', 'E7F8G9H0I1J2K3L4M5N6O7P8Q9R0'),
+(4500, 1, 0, '강남역', '선릉역', '20230916 08:10:00', '카풀하실분!', '{ "gender" : "anybody" , "age" : "anybody" }', 'S1T2U3V4W5X6Y7Z8A9B0C1D2E3F4'),
+(5000, 3, 1, '강남역', '선릉역', '20230916 08:00:00', '출퇴근 구해요!', '{ "gender" : "anybody" , "age" : "anybody" }', 'cVLXxevNRhd6V5wAaGvZO72yc1I3');
+
+-- 1번방 : 유저 8, 9 추가가입
+-- 2번방 : 유저 1 추가가입
+-- 3번방 : 유저 10 추가가입
+INSERT INTO users_rooms(user_id, room_id) VALUES
+('U9V0W1X2Y3Z4A5B6C7D8E9F0G1H2', 1),
+('I3J4K5L6M7N8O9P0Q1R2S3T4U5V6', 1),
+('A1B2C3D4E5F6G7H8I9J0K1L2M3N4', 2),
+('W7X8Y9Z0A1B2C3D4E5F6G7H8I9J0', 3),
+('I3J4K5L6M7N8O9P0Q1R2S3T4U5V6', 5);
+
+
+-- 1번방 : 유저 7 승낙대기, 유저 4 승낙, 유저 1 거절
+INSERT INTO users_approved(user_id, room_id, prove, updated_at) VALUES
+('G5H6I7J8K9L0M1N2O3P4Q5R6S7T8', 5, 'wait', now()),
+('Q3R4S5T6U7V8W9X0Y1Z2A3B4C5D6', 5, 'approved', now()),
+('A1B2C3D4E5F6G7H8I9J0K1L2M3N4', 5, 'disapproved', now());
+
+-- 5번 유저를 대상으로 리뷰 작성
+-- 알아서 빈칸의 UserFrom/UserTo 입력
+INSERT INTO users_reviews(userfrom_id, userto_id, room_id, review) VALUES
+('9000b08f-7b5b-48be-a708-4b3933882cd0', 'f7261d32-9384-4bdc-82a4-18a67e2f40e8', 11, '친절하셨어요~');
+
+
+----------------------------------------------------------------------------------------------------
+
+GET api/rooms
+SELECT
+    r.id, r.user_id, r.price, r.party_limit, r.party_now, r.locate_start, r.locate_end, r.content, r.option, p.id as plan_id, p.plan_at, p.is_reverse, r.created_at
+FROM
+    rooms r, rooms_plan p
+WHERE
+    r.id = p.room_id and 
+    r.party_now < r.party_limit and 
+    p.plan_at >= NOW() and 
+    r.deleted_at IS NULL and 
+    p.deleted_at IS NULL 
+ORDER BY
+    p.plan_at ASC;  
+
+
+{
+    "price": 1000,
+    "party_limit": 4,
+    "locate_start": "사당역",
+    "locate_end": "남대문역",
+    "content": "오실분 구해요~",
+    "option": {
+        "age": "anybody",
+        "gender": "anybody"
+    },
+    "plan_at": "2023-08-17 16:10:00",
+    "is_reverse": false
+}
+
+
+INSERT INTO users_driver (user_id, car_no, car_type, car_limit, car_pictures, license_path) VALUES
+('8933c4d6-055f-4b73-a30b-654fc36754de', '2515', 'IONIQ 5', 4, ARRAY ['/a'], '');

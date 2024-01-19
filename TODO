@@ -1,0 +1,20 @@
+1. api에도 버전을 넣어서 관리
+     예시로 'app.mota.mobi/v2/api/room'.  요런 식으로
+     한번 업데이트하거나 할때 잘 정리해둬야할듯
+     이전에 사용하던 api도 일단 살려두고 새로운 api를 붙여야할 듯해
+2.  삭제된 room, get 요청 시 안 뜨게
+3. room 삭제랑 종료 제대로 되는지 확인
+4. post 'api/rooms/'  (매칭 만들 때) 에러가 뜨는데 왜 뜨는지 확인해줘
+    일단 보내는 형식잉 잘못되었다고 하는데 전에 보내던 형식 그대로 보내도 안되네. 전에도 비슷한 문제 생겨서 plan_at을 수정했었는데 지금도 그쪽이 아닐까 생각이 들어. DateTime 형식(2020/03/23T23:24:6:0:0 >> 정확하진 않은데 대략 이런 식이야) 으로 보내면 받을 수 있게 부탁드립니다
+5. 회원 탈퇴 api
+모든 관련 데이터 삭베
+
+7. [ERR] [PUT] http://dev.app.mota.mobi/api/rooms/43/terminate
+flutter:  [{ERROR: 방 탐색 실패}]
+[ERR] [PUT] http://dev.app.mota.mobi/api/rooms/44/terminate
+flutter:  [{ERROR: 방 탐색 실패}]
+방 terminate 한 방이 계속 get에서 떠요
+수정해야할 거 재 업합니다
+
+방 삭제시 approved 삭제  
+ + approved 삭제시 알림도 삭제되게 

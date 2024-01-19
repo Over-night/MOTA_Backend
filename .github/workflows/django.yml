@@ -1,0 +1,211 @@
+name: Django CI
+
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+
+jobs:
+  build:
+
+    runs-on: ubuntu-latest
+    strategy:
+      max-parallel: 4
+      matrix:
+        python-version: [3.11]
+    env:
+      SECRET_KEY: ${{ secrets.SECRET_KEY }}
+      DJANGO_DB_NAME: ${{ vars.DJANGO_DB_NAME }}
+      DJANGO_DB_USER: ${{ vars.DJANGO_DB_USER }}
+      DJANGO_DB_PASSWORD: ${{ secrets.DJANGO_DB_PASSWORD }}
+      DJANGO_DB_HOST: ${{ vars.DJANGO_DB_HOST }}
+      DJANGO_DB_PORT: ${{ vars.DJANGO_DB_PORT }}
+      FIREBASE_JSON: ${{ secrets.FIREBASE_JSON }}
+      AWS_REGION: ${{ secrets.AWS_REGION }}
+      AWS_STORAGE_BUCKET_NAME: ${{ secrets.AWS_STORAGE_BUCKET_NAME }}
+      AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+      AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+      ROLLBAR_ACCESS_TOKEN: ${{ secrets.ROLLBAR_ACCESS_TOKEN }}
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v3
+
+    - name: Set up Python ${{ matrix.python-version }}
+      uses: actions/setup-python@v3
+      with:
+        python-version: ${{ matrix.python-version }}
+
+    - name: make firebase.json file
+      run: |
+        mkdir -p ./private
+        echo "$FIREBASE_JSON" > ./private/firebase.json
+
+    - name: apt update
+      run: |
+          sudo apt-get update
+          sudo apt-get install -y python3-dev
+          sudo apt install libffi-dev
+          sudo apt install pkg-config
+
+    - name: Upgrade Basic Module
+      run: |
+          python -m pip install --upgrade pip
+          python -m pip install --upgrade Cython
+
+    - name: Install Dependencies
+      run: |
+        pip install -r requirements.txt
+
+    - name: Run Tests
+      run: |
+        python manage.py test
+
+    - name: executing remote ssh commands using ssh key
+      env:
+        MY_GITHUB_EMAIL: hidden98716@gmail.com
+        MY_GITHUB_NAME: Over-night
+      uses: appleboy/ssh-action@v1.0.0
+      with:
+        host: ${{ secrets.REMOTE_IP }}
+        username: ${{ secrets.REMOTE_SSH_ID }}
+        key: ${{ secrets.REMOTE_SSH_KEY }}
+        port: ${{ secrets.REMOTE_SSH_PORT }}
+        timeout: 300s
+        script: |
+          whoami
+          cd /home/ubuntu/MOTA_Back
+          git config --global user.email $MY_GITHUB_EMAIL
+          git config --global user.name $MY_GITHUB_NAME
+          git remote set-url origin https://${{ secrets.MY_GITHUB_PASSWORD }}@github.com/Moyeobayo/MOTA_Back.git
+          git fetch --all
+          git reset --hard origin/main
+          git pull origin main
+          python3.11 -m pip install -r requirements.txt
+          python3.11 manage.py crontab add
+          sudo systemctl restart uwsgi nginx
+
+
+# name: Django CI
+
+# on:
+#   push:
+#     branches: [ "main" ]
+#   pull_request:
+#     branches: [ "main" ]
+
+# jobs:
+#   build:
+
+#     runs-on: ubuntu-latest
+#     strategy:
+#       max-parallel: 4
+#       matrix:
+#         python-version: [3.11]
+#     env:
+#       SECRET_KEY: ${{ secrets.SECRET_KEY }}
+#       DJANGO_DB_NAME: ${{ secrets.DJANGO_DB_NAME }}
+#       DJANGO_DB_USER: ${{ secrets.DJANGO_DB_USER }}
+#       DJANGO_DB_PASSWORD: ${{ secrets.DJANGO_DB_PASSWORD }}
+#       DJANGO_DB_HOST: ${{ secrets.DJANGO_DB_HOST }}
+#       DJANGO_DB_PORT: ${{ secrets.DJANGO_DB_PORT }}
+#       TYPE: ${{ secrets.TYPE }}
+#       PROJECT_ID: ${{ secrets.PROJECT_ID }}
+#       PRIVATE_KEY_ID: ${{ secrets.PRIVATE_KEY_ID }}
+#       PRIVATE_KEY: ${{ secrets.PRIVATE_KEY }}
+#       CLIENT_EMAIL: ${{ secrets.CLIENT_EMAIL }}
+#       CLIENT_ID: ${{ secrets.CLIENT_ID }}
+#       AUTH_URI: ${{ secrets.AUTH_URI }}
+#       TOKEN_URI: ${{ secrets.TOKEN_URI }}
+#       AUTH_PROVIDER_X509_CERT_URL: ${{ secrets.AUTH_PROVIDER_X509_CERT_URL }}
+#       CLIENT_X509_CERT_URL: ${{ secrets.CLIENT_X509_CERT_URL }}
+#       UNIVERSE_DOMAIN: ${{ secrets.UNIVERSE_DOMAIN }}
+      
+#     steps:
+#     - name: Checkout code
+#       uses: actions/checkout@v3
+
+#     - name: Set up Python ${{ matrix.python-version }}
+#       uses: actions/setup-python@v3
+#       with:
+#         python-version: ${{ matrix.python-version }}
+
+#     - name: apt update
+#       run: |
+#           sudo apt-get update
+#           sudo apt-get install -y python3-dev
+#           sudo apt install libffi-dev
+#           sudo apt install pkg-config
+#     - name: Upgrade Basic Module
+#       run: |
+#           python -m pip install --upgrade pip
+#           python -m pip install --upgrade Cython
+#     - name: Install Dependencies
+#       run: |
+#         pip install -r requirements.txt
+#     - name: Run Tests
+#       run: |
+#         python manage.py test
+
+
+#         name: Django CI
+
+#         on:
+#           push:
+#             branches: [ "main" ]
+#           pull_request:
+#             branches: [ "main" ]
+        
+#         jobs:
+#           build:
+        
+#             runs-on: ubuntu-latest
+#             strategy:
+#               max-parallel: 4
+#               matrix:
+#                 python-version: [3.11]
+#             env:
+#               SECRET_KEY: ${{ secrets.SECRET_KEY }}
+#               DJANGO_DB_NAME: ${{ secrets.DJANGO_DB_NAME }}
+#               DJANGO_DB_USER: ${{ secrets.DJANGO_DB_USER }}
+#               DJANGO_DB_PASSWORD: ${{ secrets.DJANGO_DB_PASSWORD }}
+#               DJANGO_DB_HOST: ${{ secrets.DJANGO_DB_HOST }}
+#               DJANGO_DB_PORT: ${{ secrets.DJANGO_DB_PORT }}
+#               TYPE: ${{ secrets.TYPE }}
+#               PROJECT_ID: ${{ secrets.PROJECT_ID }}
+#               PRIVATE_KEY_ID: ${{ secrets.PRIVATE_KEY_ID }}
+#               PRIVATE_KEY: ${{ secrets.PRIVATE_KEY }}
+#               CLIENT_EMAIL: ${{ secrets.CLIENT_EMAIL }}
+#               CLIENT_ID: ${{ secrets.CLIENT_ID }}
+#               AUTH_URI: ${{ secrets.AUTH_URI }}
+#               TOKEN_URI: ${{ secrets.TOKEN_URI }}
+#               AUTH_PROVIDER_X509_CERT_URL: ${{ secrets.AUTH_PROVIDER_X509_CERT_URL }}
+#               CLIENT_X509_CERT_URL: ${{ secrets.CLIENT_X509_CERT_URL }}
+#               UNIVERSE_DOMAIN: ${{ secrets.UNIVERSE_DOMAIN }}
+              
+#             steps:
+#             - name: Checkout code
+#               uses: actions/checkout@v3
+        
+#             - name: Set up Python ${{ matrix.python-version }}
+#               uses: actions/setup-python@v3
+#               with:
+#                 python-version: ${{ matrix.python-version }}
+        
+#             - name: apt update
+#               run: |
+#                   sudo apt-get update
+#                   sudo apt-get install -y python3-dev
+#                   sudo apt install libffi-dev
+#                   sudo apt install pkg-config
+#             - name: Upgrade Basic Module
+#               run: |
+#                   python -m pip install --upgrade pip
+#                   python -m pip install --upgrade Cython
+#             - name: Install Dependencies
+#               run: |
+#                 pip install -r requirements.txt
+#             - name: Run Tests
+#               run: |
+#                 python manage.py test
